@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>תרגול לוח הכפל והחילוק</title>
+  <style>
+    :root {
+      --primary: #4f46e5;
+      --primary-hover: #4338ca;
+      --success: #16a34a;
+      --error: #dc2626;
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --text: #1e293b;
+      --highlight-header: #fde047;
+      --highlight-cell: #4ade80;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      min-height: 100dvh;
+      padding: 16px;
+    }
+
+    .screen {
+      width: 100%;
+      max-width: 420px;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .screen.active {
+      display: flex;
+    }
+
+    /* מסך פתיחה */
+    .menu-card {
+      background: var(--card-bg);
+      border-radius: 24px;
+      padding: 24px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+      width: 100%;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .menu-title {
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: var(--primary);
+    }
+
+    .menu-subtitle {
+      font-size: 1rem;
+      color: #64748b;
+    }
+
+    .number-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+
+    .btn-choice {
+      background: #f1f5f9;
+      border: 2px solid transparent;
+      border-radius: 14px;
+      padding: 14px 0;
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--text);
+      cursor: pointer;
+      touch-action: manipulation;
+      transition: background-color 0.1s, transform 0.1s;
+    }
+
+    .btn-choice:active {
+      transform: scale(0.96);
+      background: #e2e8f0;
+    }
+
+    .btn-all-numbers {
+      grid-column: span 3;
+      background: var(--primary);
+      color: white;
+      padding: 14px 0;
+      font-size: 1.2rem;
+      font-weight: 700;
+      border-radius: 14px;
+      border: none;
+      cursor: pointer;
+      touch-action: manipulation;
+    }
+
+    .btn-all-numbers:active {
+      background: var(--primary-hover);
+    }
+
+    /* מסך משחק */
+    .header-bar {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--card-bg);
+      padding: 12px 18px;
+      border-radius: 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      font-size: 0.95rem;
+      font-weight: 600;
+    }
+
+    .timer-badge {
+      color: var(--primary);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .game-card {
+      width: 100%;
+      background: var(--card-bg);
+      border-radius: 24px;
+      padding: 24px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .question {
+      font-size: 3.5rem;
+      font-weight: 800;
+      letter-spacing: 2px;
+      direction: ltr;
+    }
+
+    .answer-display {
+      width: 100%;
+      height: 60px;
+      border-radius: 14px;
+      background: #f1f5f9;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.2rem;
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    .answer-display.placeholder {
+      color: #94a3b8;
+      font-size: 1.4rem;
+    }
+
+    .keypad {
+      width: 100%;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+
+    .key-btn {
+      background: var(--card-bg);
+      border: 1px solid #e2e8f0;
+      border-radius: 14px;
+      padding: 14px 0;
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+      cursor: pointer;
+      touch-action: manipulation;
+      transition: background-color 0.1s, transform 0.1s;
+    }
+
+    .key-btn:active {
+      transform: scale(0.96);
+      background: #e2e8f0;
+    }
+
+    .key-btn.action-submit {
+      background: var(--primary);
+      color: white;
+      border: none;
+    }
+
+    .key-btn.action-submit:active {
+      background: var(--primary-hover);
+    }
+
+    .key-btn.action-delete {
+      background: #fee2e2;
+      color: var(--error);
+      border: none;
+    }
+
+    /* מסך סיכום */
+    .summary-card {
+      background: var(--card-bg);
+      border-radius: 24px;
+      padding: 32px 24px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+      width: 100%;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .summary-icon {
+      font-size: 4rem;
+    }
+
+    .summary-title {
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: var(--success);
+    }
+
+    .stat-box {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      padding: 16px;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .stat-label {
+      font-size: 0.95rem;
+      color: #64748b;
+    }
+
+    .stat-value {
+      font-size: 2.2rem;
+      font-weight: 800;
+      color: var(--primary);
+    }
+
+    .btn-restart {
+      width: 100%;
+      background: var(--primary);
+      color: white;
+      padding: 16px;
+      font-size: 1.25rem;
+      font-weight: 700;
+      border-radius: 14px;
+      border: none;
+      cursor: pointer;
+      touch-action: manipulation;
+    }
+
+    .btn-restart:active {
+      background: var(--primary-hover);
+    }
+
+    /* מודל טבלת הכפל */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.7);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 12px;
+      z-index: 100;
+      backdrop-filter: blur(2px);
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal-content {
+      background: #ffffff;
+      width: 100%;
+      max-width: 440px;
+      border-radius: 20px;
+      padding: 18px 14px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    }
+
+    .modal-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--error);
+      text-align: center;
+    }
+
+    .modal-explanation {
+      font-size: 0.95rem;
+      color: #475569;
+      text-align: center;
+      direction: ltr;
+      font-weight: 600;
+    }
+
+    .table-wrapper {
+      width: 100%;
+      overflow-x: auto;
+      display: flex;
+      justify-content: center;
+    }
+
+    table.mult-table {
+      border-collapse: collapse;
+      text-align: center;
+      font-size: 0.75rem;
+      direction: ltr;
+    }
+
+    table.mult-table th, table.mult-table td {
+      width: 28px;
+      height: 28px;
+      padding: 1px;
+      border: 1px solid #cbd5e1;
+    }
+
+    table.mult-table th {
+      background: #f1f5f9;
+      font-weight: 700;
+    }
+
+    table.mult-table th.highlight-header {
+      background: var(--highlight-header);
+      color: #000;
+    }
+
+    table.mult-table td.highlight-target {
+      background: var(--highlight-cell);
+      font-weight: bold;
+      color: #064e3b;
+      transform: scale(1.1);
+      box-shadow: inset 0 0 0 2px #047857;
+    }
+
+    .btn-resume {
+      width: 100%;
+      padding: 14px;
+      font-size: 1.15rem;
+      font-weight: 700;
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      touch-action: manipulation;
+    }
+
+    .btn-resume:active {
+      background: var(--primary-hover);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- מסך פתיחה -->
+  <div id="startScreen" class="screen active">
+    <div class="menu-card">
+      <div class="menu-title">לוח הכפל והחילוק</div>
+      <div class="menu-subtitle">בחר מספר לתרגול (12 תרגילים):</div>
+      <div class="number-grid">
+        <button class="btn-choice" onclick="startGame(2)">2</button>
+        <button class="btn-choice" onclick="startGame(3)">3</button>
+        <button class="btn-choice" onclick="startGame(4)">4</button>
+        <button class="btn-choice" onclick="startGame(5)">5</button>
+        <button class="btn-choice" onclick="startGame(6)">6</button>
+        <button class="btn-choice" onclick="startGame(7)">7</button>
+        <button class="btn-choice" onclick="startGame(8)">8</button>
+        <button class="btn-choice" onclick="startGame(9)">9</button>
+        <button class="btn-choice" onclick="startGame(10)">10</button>
+        <button class="btn-all-numbers" onclick="startGame('all')">כל המספרים</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- מסך משחק -->
+  <div id="gameScreen" class="screen">
+    <div class="header-bar">
+      <div>תרגיל: <span id="currentExNum">1</span> / 12</div>
+      <div class="timer-badge">⏱️ <span id="timerDisplay">0.0</span> שניות</div>
+      <div id="selectedModeBadge">הכל</div>
+    </div>
+
+    <div class="game-card">
+      <div class="question" id="questionText">0 × 0</div>
+      <div class="answer-display placeholder" id="answerDisplay">תשובה...</div>
+    </div>
+
+    <div class="keypad">
+      <button class="key-btn" onclick="appendDigit('1')">1</button>
+      <button class="key-btn" onclick="appendDigit('2')">2</button>
+      <button class="key-btn" onclick="appendDigit('3')">3</button>
+      <button class="key-btn" onclick="appendDigit('4')">4</button>
+      <button class="key-btn" onclick="appendDigit('5')">5</button>
+      <button class="key-btn" onclick="appendDigit('6')">6</button>
+      <button class="key-btn" onclick="appendDigit('7')">7</button>
+      <button class="key-btn" onclick="appendDigit('8')">8</button>
+      <button class="key-btn" onclick="appendDigit('9')">9</button>
+      <button class="key-btn action-delete" onclick="deleteDigit()">⌫</button>
+      <button class="key-btn" onclick="appendDigit('0')">0</button>
+      <button class="key-btn action-submit" onclick="submitAnswer()">אישור</button>
+    </div>
+  </div>
+
+  <!-- מסך סיום -->
+  <div id="endScreen" class="screen">
+    <div class="summary-card">
+      <div class="summary-icon">🏆</div>
+      <div class="summary-title">כל הכבוד!</div>
+      
+      <div class="stat-box">
+        <span class="stat-label">זמן ממוצע לפתרון תרגיל:</span>
+        <span class="stat-value" id="avgTimeDisplay">0.0 שניות</span>
+      </div>
+
+      <button class="btn-restart" onclick="goToStartScreen()">שחק שוב</button>
+    </div>
+  </div>
+
+  <!-- מודל טבלת הכפל -->
+  <div class="modal-overlay" id="helpModal">
+    <div class="modal-content">
+      <div class="modal-title">לא מדויק, נבדוק בלוח:</div>
+      <div class="modal-explanation" id="modalExplanation"></div>
+      <div class="table-wrapper" id="tableContainer"></div>
+      <button class="btn-resume" onclick="closeModalAndResume()">הבנתי</button>
+    </div>
+  </div>
+
+  <script>
+    const TOTAL_EXERCISES = 12;
+    let selectedMode = 'all';
+    let exercisesSolved = 0; // ספירת תרגילים שנענו נכונה
+    let currentExercise = null;
+    let userInput = "";
+    
+    // מעקב זמנים
+    let exerciseDurations = [];
+    let exerciseStartTime = 0;
+    let totalPausedDuration = 0;
+    let pauseStartTime = 0;
+    let timerInterval = null;
+    let isPaused = false;
+
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    function playBeep(freq, duration) {
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+      gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start();
+      osc.stop(audioCtx.currentTime + duration);
+    }
+
+    function initTable() {
+      let html = '<table class="mult-table"><thead><tr><th>×</th>';
+      for (let c = 1; c <= 10; c++) html += `<th id="th-col-${c}">${c}</th>`;
+      html += '</tr></thead><tbody>';
+
+      for (let r = 1; r <= 10; r++) {
+        html += `<tr><th id="th-row-${r}">${r}</th>`;
+        for (let c = 1; c <= 10; c++) {
+          html += `<td id="cell-${r}-${c}">${r * c}</td>`;
+        }
+        html += '</tr>';
+      }
+      html += '</tbody></table>';
+      document.getElementById('tableContainer').innerHTML = html;
+    }
+
+    function showScreen(screenId) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.getElementById(screenId).classList.add('active');
+    }
+
+    function startGame(mode) {
+      selectedMode = mode;
+      exercisesSolved = 0;
+      exerciseDurations = [];
+      userInput = "";
+      
+      document.getElementById('selectedModeBadge').textContent = 
+        mode === 'all' ? 'כל המספרים' : `כפולות ${mode}`;
+      
+      showScreen('gameScreen');
+      loadNextExercise();
+    }
+
+    function goToStartScreen() {
+      clearInterval(timerInterval);
+      isPaused = true;
+      userInput = "";
+      showScreen('startScreen');
+    }
+
+    function getRandomInt(min, max) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function generateExercise() {
+      const isDivision = Math.random() > 0.5;
+
+      if (selectedMode === 'all') {
+        const a = getRandomInt(2, 10);
+        const b = getRandomInt(2, 10);
+        if (!isDivision) {
+          return {
+            type: 'mult',
+            a: a,
+            b: b,
+            product: a * b,
+            expected: a * b,
+            questionStr: `${a} × ${b}`
+          };
+        } else {
+          const product = a * b;
+          return {
+            type: 'div',
+            a: a,
+            b: b,
+            product: product,
+            expected: b,
+            questionStr: `${product} ÷ ${a}`
+          };
+        }
+      } else {
+        const fixed = parseInt(selectedMode, 10);
+
+        if (!isDivision) {
+          // כפל: תמיד כולל את המספר הנבחר (בסדר גורמים אקראי)
+          const other = getRandomInt(2, 10);
+          const [a, b] = Math.random() > 0.5 ? [fixed, other] : [other, fixed];
+          return {
+            type: 'mult',
+            a: a,
+            b: b,
+            product: a * b,
+            expected: a * b,
+            questionStr: `${a} × ${b}`
+          };
+        } else {
+          // חילוק: המחלק הוא תמיד המספר הנבחר (לחלק ב-fixed).
+          // התוצאה היא תמיד מספר שונה מהמחלק כדי שלא תתקבל תוצאה זהה למספר הנבחר
+          let quotient;
+          do {
+            quotient = getRandomInt(2, 10);
+          } while (quotient === fixed);
+
+          const dividend = fixed * quotient;
+          return {
+            type: 'div',
+            a: fixed,         // מחלק
+            b: quotient,      // מנה
+            product: dividend, // מחולק
+            expected: quotient,
+            questionStr: `${dividend} ÷ ${fixed}`
+          };
+        }
+      }
+    }
+
+    function startTimer() {
+      exerciseStartTime = performance.now();
+      totalPausedDuration = 0;
+      clearInterval(timerInterval);
+      timerInterval = setInterval(() => {
+        if (!isPaused) {
+          const elapsed = (performance.now() - exerciseStartTime - totalPausedDuration) / 1000;
+          document.getElementById('timerDisplay').textContent = Math.max(0, elapsed).toFixed(1);
+        }
+      }, 100);
+    }
+
+    function loadNextExercise() {
+      if (exercisesSolved >= TOTAL_EXERCISES) {
+        endGame();
+        return;
+      }
+
+      document.getElementById('currentExNum').textContent = exercisesSolved + 1;
+      currentExercise = generateExercise();
+      document.getElementById('questionText').textContent = currentExercise.questionStr;
+      userInput = "";
+      updateDisplay();
+      
+      isPaused = false;
+      startTimer();
+    }
+
+    function updateDisplay() {
+      const display = document.getElementById('answerDisplay');
+      if (userInput === "") {
+        display.textContent = "תשובה...";
+        display.classList.add('placeholder');
+      } else {
+        display.textContent = userInput;
+        display.classList.remove('placeholder');
+      }
+    }
+
+    function appendDigit(d) {
+      if (userInput.length < 3) {
+        userInput += d;
+        updateDisplay();
+      }
+    }
+
+    function deleteDigit() {
+      userInput = userInput.slice(0, -1);
+      updateDisplay();
+    }
+
+    function submitAnswer() {
+      if (userInput === "") return;
+      const val = parseInt(userInput, 10);
+
+      if (val === currentExercise.expected) {
+        // תשובה נכונה
+        playBeep(587.33, 0.15);
+        clearInterval(timerInterval);
+        
+        const exerciseNetTime = (performance.now() - exerciseStartTime - totalPausedDuration) / 1000;
+        exerciseDurations.push(exerciseNetTime);
+        exercisesSolved++;
+
+        if (exercisesSolved >= TOTAL_EXERCISES) {
+          endGame();
+        } else {
+          loadNextExercise();
+        }
+      } else {
+        // תשובה שגויה
+        playBeep(220, 0.25);
+        showHelp();
+      }
+    }
+
+    function endGame() {
+      clearInterval(timerInterval);
+      isPaused = true;
+
+      const totalSeconds = exerciseDurations.reduce((sum, val) => sum + val, 0);
+      const avgSeconds = exerciseDurations.length > 0 ? (totalSeconds / exerciseDurations.length) : 0;
+
+      document.getElementById('avgTimeDisplay').textContent = `${avgSeconds.toFixed(1)} שניות`;
+      showScreen('endScreen');
+    }
+
+    function showHelp() {
+      isPaused = true;
+      pauseStartTime = performance.now();
+
+      document.querySelectorAll('.highlight-header, .highlight-target').forEach(el => {
+        el.classList.remove('highlight-header', 'highlight-target');
+      });
+
+      const a = currentExercise.a;
+      const b = currentExercise.b;
+      const product = currentExercise.product;
+
+      document.getElementById(`th-row-${a}`).classList.add('highlight-header');
+      document.getElementById(`th-col-${b}`).classList.add('highlight-header');
+      document.getElementById(`cell-${a}-${b}`).classList.add('highlight-target');
+
+      const expl = document.getElementById('modalExplanation');
+      if (currentExercise.type === 'mult') {
+        expl.textContent = `${a} × ${b} = ${product}`;
+      } else {
+        expl.textContent = `${product} ÷ ${a} = ${b}   (כי: ${a} × ${b} = ${product})`;
+      }
+
+      document.getElementById('helpModal').classList.add('active');
+    }
+
+    function closeModalAndResume() {
+      totalPausedDuration += (performance.now() - pauseStartTime);
+      document.getElementById('helpModal').classList.remove('active');
+      isPaused = false;
+      userInput = "";
+      updateDisplay();
+    }
+
+    window.addEventListener('keydown', (e) => {
+      if (document.getElementById('helpModal').classList.contains('active')) {
+        if (e.key === 'Enter' || e.key === 'Escape') closeModalAndResume();
+        return;
+      }
+      if (e.key >= '0' && e.key <= '9') appendDigit(e.key);
+      else if (e.key === 'Backspace') deleteDigit();
+      else if (e.key === 'Enter') {
+        if (document.getElementById('gameScreen').classList.contains('active')) {
+          submitAnswer();
+        }
+      }
+    });
+
+    initTable();
+  </script>
+</body>
+</html>
